@@ -96,6 +96,7 @@ void loop() {
     }
     Serial.print("Next attempt at ");
     Serial.println(lWaitMillis);
+    Serial.println();
   }
 
   // store the state of the connection for next time through

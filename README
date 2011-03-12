@@ -1,0 +1,6 @@
+This Arduino sketch implements nethoncho's DHT22 code
+(https://github.com/nethoncho/Arduino-DHT22) along with Tom Igoe's
+Arduino-Pachube Client (http://arduino.cc/en/Tutorial/PachubeCient).
+
+Make sure you've installed the DHT22 library and set your Pachube API key and
+Feed ID inside the sendData() method of this sketch.
