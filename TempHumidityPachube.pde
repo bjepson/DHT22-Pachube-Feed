@@ -33,7 +33,7 @@ byte subnet[] = {
 
 //  The address of the server you want to connect to (pachube.com):
 byte server[] = { 
-  209,40,205,190 }; 
+  173,203,98,29 };
 
 // initialize the library instance:
 Client client(server, 80);
