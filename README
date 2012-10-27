@@ -1,6 +1,7 @@
-This Arduino sketch implements nethoncho's DHT22 code
-(https://github.com/nethoncho/Arduino-DHT22) along with Tom Igoe's
+This Arduino sketch implements Adafruit's DHT code
+(https://github.com/adafruit/DHT-sensor-library) along with Tom Igoe's
 Arduino-Pachube Client (http://arduino.cc/en/Tutorial/PachubeCient).
 
-Make sure you've installed the DHT22 library and set your Pachube API key and
+Make sure you've installed the DHT library and set your IP address and gateway 
+at the top of the sketch, and also specified your Cosm/Pachube API key and
 Feed ID inside the sendData() method of this sketch.
