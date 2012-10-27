@@ -6,16 +6,17 @@
        http://arduino.cc/en/Tutorial/PachubeCient
  */
 
-#include <DHT22.h>
+#include <DHT.h>
 #include <SPI.h>
 #include <Ethernet.h>
 
 // Data wire is plugged into port 7 on the Arduino
 // Connect a 4.7K resistor between VCC and the data pin (strong pullup)
-#define DHT22_PIN 7
+#define DHTPIN 7
+#define DHTTYPE DHT22   // DHT 22  (AM2302)
 
-// Setup a DHT22 instance
-DHT22 myDHT22(DHT22_PIN);
+// Setup a DHT instance
+DHT myDHT22(DHTPIN, DHTTYPE);
 
 static unsigned long lWaitMillis;
 
@@ -25,9 +26,9 @@ byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 // assign an IP address for the controller:
 byte ip[] = { 
-  10,0,1,201 };
+  192,168,1,201 };
 byte gateway[] = {
-  10,0,1,1}; 
+  192,168,1,1}; 
 byte subnet[] = { 
   255, 255, 255, 0 };
 
@@ -36,7 +37,7 @@ byte server[] = {
   173,203,98,29 };
 
 // initialize the library instance:
-Client client(server, 80);
+EthernetClient client;
 
 boolean lastConnected = false;      // state of the connection last time through the main loop
 const long postingInterval = 180000;  //delay between updates to Pachube.com
@@ -47,7 +48,7 @@ void setup(void)
 {
   // start serial port
   Serial.begin(9600);
-  Serial.println("DHT22 Library Demo");
+  Serial.println("DHT Sensor Monitor");
 
   // start the ethernet connection:
   Ethernet.begin(mac, ip);
@@ -85,10 +86,13 @@ void loop() {
   // if you're not connected, and ten seconds have passed since
   // your last connection, then connect again and send data:
   if(!client.connected() &&  (long)( millis() - lWaitMillis ) >= 0  ) {
-    if (readData()) {
-      int temp = myDHT22.getTemperatureC() * 9 / 5 + 32.5;
-      int humidity = myDHT22.getHumidity() + .5;
-      sendData(temp, humidity);
+    
+    float temp = myDHT22.readTemperature();
+    float humidity = myDHT22.readHumidity();
+    if (isnan(temp) || isnan(humidity)) {
+      Serial.println("Failed to read from DHT");
+    } else {
+      sendData(temp * 9 / 5 + 32.5, humidity + .5);
     }
     lWaitMillis += postingInterval;
     if (lWaitMillis < millis()) {
@@ -105,59 +109,11 @@ void loop() {
 
 }
 
-
-boolean readData()
-{ 
-  DHT22_ERROR_t errorCode;
-
-  Serial.print("Requesting data at ");
-  Serial.println(millis());
-  errorCode = myDHT22.readData();
-  switch(errorCode)
-  {
-  case DHT_ERROR_NONE:
-    Serial.print("Got Data ");
-    Serial.print(myDHT22.getTemperatureC() * 9 / 5 + 32);
-    Serial.print("F ");
-    Serial.print(myDHT22.getHumidity());
-    Serial.println("%");
-    return true;
-    break;
-  case DHT_ERROR_CHECKSUM:
-    Serial.print("check sum error ");
-    Serial.print(myDHT22.getTemperatureC() * 9 / 5 + 32);
-    Serial.print("F ");
-    Serial.print(myDHT22.getHumidity());
-    Serial.println("%");
-    break;
-  case DHT_BUS_HUNG:
-    Serial.println("BUS Hung ");
-    break;
-  case DHT_ERROR_NOT_PRESENT:
-    Serial.println("Not Present ");
-    break;
-  case DHT_ERROR_ACK_TOO_LONG:
-    Serial.println("ACK time out ");
-    break;
-  case DHT_ERROR_SYNC_TIMEOUT:
-    Serial.println("Sync Timeout ");
-    break;
-  case DHT_ERROR_DATA_TIMEOUT:
-    Serial.println("Data Timeout ");
-    break;
-  case DHT_ERROR_TOOQUICK:
-    Serial.println("Polled too quick ");
-    break;
-  }
-  return false;
-}
-
-
 // this method makes a HTTP connection to the server:
 void sendData(int temp, int humidity) {
 
   // if there's a successful connection:
-  if (client.connect()) {
+  if (client.connect(server, 80)) {
 
     backoff = 0;
     Serial.println("connecting...");
